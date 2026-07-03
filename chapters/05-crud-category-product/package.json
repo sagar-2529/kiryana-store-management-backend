@@ -1,0 +1,18 @@
+{
+  "name": "05-crud-category-product",
+  "version": "1.0.0",
+  "description": "Chapter 05 — Full CRUD for Category and Product",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "npx nodemon src/server.js"
+  },
+  "keywords": [],
+  "license": "ISC",
+  "dependencies": {
+    "@prisma/client": "^7.8.0",
+    "dotenv": "^16.4.0",
+    "express": "^4.21.0",
+    "prisma": "^7.8.0"
+  }
+}

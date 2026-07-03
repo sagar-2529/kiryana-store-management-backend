@@ -1,0 +1,17 @@
+version: "3.8"
+
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: kiryana_store
+    ports:
+      - "5432:5432"
+    volumes:
+      - kiryana_pg_data:/var/lib/postgresql/data
+
+volumes:
+  kiryana_pg_data:

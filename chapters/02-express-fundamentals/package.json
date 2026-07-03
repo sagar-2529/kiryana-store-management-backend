@@ -1,0 +1,16 @@
+{
+  "name": "02-express-fundamentals",
+  "version": "1.0.0",
+  "description": "Chapter 02 — Express.js setup and core concepts",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "npx nodemon server.js"
+  },
+  "keywords": [],
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.21.0",
+    "dotenv": "^16.4.0"
+  }
+}

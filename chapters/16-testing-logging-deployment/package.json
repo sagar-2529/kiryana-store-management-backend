@@ -1,0 +1,18 @@
+{
+  "name": "16-testing-logging-deployment",
+  "version": "1.0.0",
+  "description": "Chapter 16 — Testing, logging, and deployment",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "npx nodemon src/server.js",
+    "test": "jest --verbose --forceExit --detectOpenHandles"
+  },
+  "dependencies": {
+    "@prisma/client": "^7.8.0", "cors": "^2.8.5", "dotenv": "^16.4.0",
+    "express": "^4.21.0", "morgan": "^1.10.0", "prisma": "^7.8.0", "winston": "^3.11.0"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0", "supertest": "^6.3.0"
+  }
+}

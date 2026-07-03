@@ -1,0 +1,12 @@
+{
+  "name": "01-hello-node-server",
+  "version": "1.0.0",
+  "description": "Chapter 01 — Raw Node.js HTTP server",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "npx nodemon server.js"
+  },
+  "keywords": [],
+  "license": "ISC"
+}
