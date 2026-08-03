@@ -132,17 +132,59 @@ app.post("/api/items", (req, res) => {
 // Hint: Find the item by id, update fields from req.body, return updated item
 // Return 404 if item not found
 //
-// app.put("/api/items/:id", (req, res) => {
-//   // Your code here
-// });
+// PUT /api/items/:id — Update an item
+app.put("/api/items/:id", (req, res) => {
+  // Convert id from string to number
+  const id = parseInt(req.params.id);
+
+  // Find the item
+  const item = items.find((i) => i.id === id);
+
+  // Return 404 if item doesn't exist
+  if (!item) {
+    return res.status(404).json({
+      error: "Not Found",
+      message: `Item with id ${id} does not exist`,
+    });
+  }
+
+  // Get updated fields from request body
+  const { name, price, unit } = req.body;
+
+  // Update only the fields provided
+  if (name !== undefined) item.name = name;
+  if (price !== undefined) item.price = Number(price);
+  if (unit !== undefined) item.unit = unit;
+
+  // Return updated item
+  res.json({
+    message: "Item updated successfully",
+    data: item,
+  });
+});
 
 // DELETE /api/items/:id — Delete an item
-// Hint: Find index with findIndex, use splice to remove, return 204
-// Return 404 if item not found
-//
-// app.delete("/api/items/:id", (req, res) => {
-//   // Your code here
-// });
+app.delete("/api/items/:id", (req, res) => {
+  // Convert id from string to number
+  const id = parseInt(req.params.id);
+
+  // Find the index of the item
+  const index = items.findIndex((item) => item.id === id);
+
+  // Return 404 if item doesn't exist
+  if (index === -1) {
+    return res.status(404).json({
+      error: "Not Found",
+      message: `Item with id ${id} does not exist`,
+    });
+  }
+
+  // Remove the item from the array
+  items.splice(index, 1);
+
+  // Return 204 No Content
+  res.status(204).send();
+});
 
 // ── 404 Catch-all ───────────────────────────────────────────
 // This MUST be the last route — it catches everything unmatched

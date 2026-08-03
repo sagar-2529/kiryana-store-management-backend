@@ -3,8 +3,13 @@
 // Run: npx prisma db seed
 // ============================================================
 
+const path = require('path');
+require('dotenv').config({ path: path.resolve(__dirname, '../../..', '.env') });
 const { PrismaClient } = require("@prisma/client");
-const prisma = new PrismaClient();
+const { PrismaPg } = require("@prisma/adapter-pg");
+
+const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL });
+const prisma = new PrismaClient({ adapter });
 
 async function main() {
   console.log("🌱 Starting seed...\n");

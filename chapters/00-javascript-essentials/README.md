@@ -11,7 +11,7 @@ This chapter covers **only** the JavaScript concepts you'll encounter across Cha
 3. Complete the homework exercises in `exercises.js`
 
 ## How to Run
-
+![![alt text](image-1.png)](image.png)
 ```bash
 cd chapters/00-javascript-essentials
 node examples.js
