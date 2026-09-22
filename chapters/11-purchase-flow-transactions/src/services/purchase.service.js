@@ -35,6 +35,7 @@ async function createPurchase(purchaseData) {
     // ── Step 1: Validate items exist and have sufficient stock ──
     let totalAmount = 0;
     const purchaseItems = [];
+    const requestedByItem = new Map();
 
     for (const lineItem of items) {
       const item = await tx.item.findUnique({
@@ -46,13 +47,15 @@ async function createPurchase(purchaseData) {
       }
 
       const quantity = parseFloat(lineItem.quantity);
-      if (quantity <= 0) {
+      if (!Number.isFinite(quantity) || quantity <= 0) {
         throw new ValidationError(`Quantity must be positive for ${item.name}`);
       }
 
-      if (parseFloat(item.stock) < quantity) {
+      const requestedQuantity = (requestedByItem.get(item.id) || 0) + quantity;
+      requestedByItem.set(item.id, requestedQuantity);
+      if (parseFloat(item.stock) < requestedQuantity) {
         throw new ValidationError(
-          `Insufficient stock for ${item.name}: available ${item.stock}, requested ${quantity}`
+          `Insufficient stock for ${item.name}: available ${item.stock}, requested ${requestedQuantity}`
         );
       }
 
@@ -73,17 +76,31 @@ async function createPurchase(purchaseData) {
     // ── Step 2: Validate payment amounts ────────────────────
     const cash = parseFloat(cashPayment);
     const credit = parseFloat(creditPayment);
+    const isExact = (value) => Math.abs(value - totalAmount) < 0.001;
 
-    if (paymentType === "CASH" && cash < totalAmount) {
-      throw new ValidationError(`Cash payment (${cash}) is less than total (${totalAmount})`);
+    if (!Number.isFinite(cash) || !Number.isFinite(credit) || cash < 0 || credit < 0) {
+      throw new ValidationError("Payment amounts must be non-negative numbers");
     }
 
-    if (paymentType === "CREDIT" && credit < totalAmount) {
-      throw new ValidationError(`Credit amount (${credit}) is less than total (${totalAmount})`);
+    if (paymentType === "CASH" && (!isExact(cash) || credit !== 0)) {
+      throw new ValidationError(`Cash payment must equal the total (${totalAmount}) and credit must be 0`);
     }
 
-    if (paymentType === "MIXED" && (cash + credit) < totalAmount) {
-      throw new ValidationError(`Cash (${cash}) + Credit (${credit}) is less than total (${totalAmount})`);
+    if (paymentType === "CREDIT" && (!isExact(credit) || cash !== 0)) {
+      throw new ValidationError(`Credit payment must equal the total (${totalAmount}) and cash must be 0`);
+    }
+
+    if (paymentType === "MIXED" && !isExact(cash + credit)) {
+      throw new ValidationError(`Cash (${cash}) + credit (${credit}) must equal total (${totalAmount})`);
+    }
+
+    if (!["CASH", "CREDIT", "MIXED"].includes(paymentType)) {
+      throw new ValidationError("paymentType must be CASH, CREDIT, or MIXED");
+    }
+
+    if (customerId) {
+      const customer = await tx.customer.findUnique({ where: { id: customerId } });
+      if (!customer) throw new NotFoundError("Customer");
     }
 
     // ── Step 3: Handle credit account ───────────────────────
@@ -101,6 +118,9 @@ async function createPurchase(purchaseData) {
       const balanceBefore = parseFloat(userCredit.totalBalance);
       const creditAmount = paymentType === "CREDIT" ? totalAmount : credit;
       const balanceAfter = balanceBefore + creditAmount;
+      if (userCredit.creditLimit !== null && balanceAfter > parseFloat(userCredit.creditLimit)) {
+        throw new ValidationError(`Credit limit exceeded: limit is ${userCredit.creditLimit}`);
+      }
 
       // Update credit balance
       userCredit = await tx.userCredit.update({
@@ -148,12 +168,15 @@ async function createPurchase(purchaseData) {
 
     // ── Step 6: Deduct stock from items ─────────────────────
     for (const pi of purchaseItems) {
-      await tx.item.update({
-        where: { id: pi.itemId },
+      const updated = await tx.item.updateMany({
+        where: { id: pi.itemId, stock: { gte: pi.quantity } },
         data: {
           stock: { decrement: pi.quantity },
         },
       });
+      if (updated.count !== 1) {
+        throw new ValidationError("Stock changed while creating this purchase. Please try again.");
+      }
     }
 
     // ── Step 7: Create credit transaction record ────────────

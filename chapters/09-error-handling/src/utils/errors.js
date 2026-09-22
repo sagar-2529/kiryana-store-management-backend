@@ -44,10 +44,11 @@ class ForbiddenError extends AppError {
   }
 }
 
-// ──────────────────────────────────────────────
-// HOMEWORK: Create ConflictError (409)
-// class ConflictError extends AppError { ... }
-// ──────────────────────────────────────────────
+class ConflictError extends AppError {
+  constructor(message = "Resource conflict") {
+    super(message, 409);
+  }
+}
 
 module.exports = {
   AppError,
@@ -55,4 +56,5 @@ module.exports = {
   ValidationError,
   UnauthorizedError,
   ForbiddenError,
+  ConflictError,
 };

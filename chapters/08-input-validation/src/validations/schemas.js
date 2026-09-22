@@ -64,18 +64,22 @@ const idParamSchema = z.object({
 });
 
 // ──────────────────────────────────────────────
-// HOMEWORK: Create these schemas
+// Product and customer schemas
 // ──────────────────────────────────────────────
 
-// const createProductSchema = z.object({ ... });
-// const updateProductSchema = createProductSchema.partial();
-//
-// const createCustomerSchema = z.object({
-//   name: ...,
-//   phone: z.string().refine(val => /^\d{10}$/.test(val), "Phone must be 10 digits").optional(),
-//   address: ...,
-// });
-// const updateCustomerSchema = createCustomerSchema.partial();
+const createProductSchema = z.object({
+  name: z.string({ required_error: "Name is required" }).min(2).max(200).trim(),
+  description: z.string().max(500).trim().optional().nullable(),
+  categoryId: z.string({ required_error: "Category ID is required" }).uuid("Invalid category ID"),
+});
+const updateProductSchema = createProductSchema.omit({ categoryId: true }).partial();
+
+const createCustomerSchema = z.object({
+  name: z.string({ required_error: "Name is required" }).min(2).max(100).trim(),
+  phone: z.string().regex(/^\d{10}$/, "Phone must be 10 digits").optional().nullable(),
+  address: z.string().max(500).trim().optional().nullable(),
+});
+const updateCustomerSchema = createCustomerSchema.partial();
 
 module.exports = {
   createCategorySchema,
@@ -83,4 +87,8 @@ module.exports = {
   createItemSchema,
   updateItemSchema,
   idParamSchema,
+  createProductSchema,
+  updateProductSchema,
+  createCustomerSchema,
+  updateCustomerSchema,
 };

@@ -126,6 +126,11 @@ enum PaymentType {
   MIXED // partial cash + partial credit
 }
 
+enum PurchaseStatus {
+  ACTIVE
+  CANCELLED
+}
+
 // ─────────────────────────────────────────────
 // PURCHASE  (one bill / invoice)
 // customerId NULL  → anonymous cash customer
@@ -134,6 +139,7 @@ model Purchase {
   id                String      @id @default(uuid())
   customerId        String?     // NULL for anonymous cash purchases
   paymentType       PaymentType
+  status            PurchaseStatus @default(ACTIVE)
   totalAmount       Decimal     @db.Decimal(10, 2)
   cashPayment       Decimal     @default(0) @db.Decimal(10, 2)
   creditPayment     Decimal     @default(0) @db.Decimal(10, 2)

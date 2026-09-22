@@ -89,21 +89,34 @@ const login = asyncHandler(async (req, res) => {
   });
 });
 
-// ── GET ME (homework stub) ──────────────────────────────────
-// HOMEWORK: Implement — return req.admin (already attached by auth middleware)
+// ── GET ME ──────────────────────────────────────────────────
 const getMe = asyncHandler(async (req, res) => {
-  // 👇 YOUR CODE HERE (hint: req.admin is already available!)
-  res.status(501).json({ success: false, error: "Not implemented — homework!" });
+  res.json({ success: true, data: { admin: req.admin } });
 });
 
-// ── CHANGE PASSWORD (homework stub) ─────────────────────────
-// HOMEWORK: Implement
-// - Require req.body.oldPassword and req.body.newPassword
-// - Verify old password with bcrypt.compare
-// - Hash new password and update in DB
+// ── CHANGE PASSWORD ─────────────────────────────────────────
 const changePassword = asyncHandler(async (req, res) => {
-  // 👇 YOUR CODE HERE
-  res.status(501).json({ success: false, error: "Not implemented — homework!" });
+  const { oldPassword, newPassword } = req.body;
+  if (!oldPassword || !newPassword) {
+    throw new ValidationError("oldPassword and newPassword are required");
+  }
+  if (newPassword.length < 6) {
+    throw new ValidationError("New password must be at least 6 characters");
+  }
+
+  const admin = await prisma.admin.findUnique({ where: { id: req.admin.id } });
+  if (!admin || !(await bcrypt.compare(oldPassword, admin.password))) {
+    throw new UnauthorizedError("Current password is incorrect");
+  }
+  if (await bcrypt.compare(newPassword, admin.password)) {
+    throw new ValidationError("New password must be different from the current password");
+  }
+
+  await prisma.admin.update({
+    where: { id: admin.id },
+    data: { password: await bcrypt.hash(newPassword, 12) },
+  });
+  res.json({ success: true, message: "Password changed successfully" });
 });
 
 module.exports = { register, login, getMe, changePassword };

@@ -19,12 +19,12 @@ function handlePrismaError(err) {
     case "P2025":
       // Record not found
       return { statusCode: 404, message: "Record not found" };
-    // ──────────────────────────────────────────
-    // HOMEWORK: Add mappings for:
-    // case "P2003": FK constraint failure
-    // case "P2014": Relation violation
-    // case "P2021": Table doesn't exist
-    // ──────────────────────────────────────────
+    case "P2003":
+      return { statusCode: 409, message: "This record is still referenced by another record" };
+    case "P2014":
+      return { statusCode: 409, message: "This change would violate a required relation" };
+    case "P2021":
+      return { statusCode: 500, message: "Database schema is not ready" };
     default:
       return null; // Unknown Prisma error — let it fall through
   }
