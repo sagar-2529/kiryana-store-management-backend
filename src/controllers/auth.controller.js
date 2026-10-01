@@ -12,7 +12,8 @@ function tokenFor(admin) {
 }
 
 async function register(req, res) {
-  const { name, email, password } = req.body;
+  const { name, password } = req.body;
+  const email = req.body.email?.trim().toLowerCase();
   if (!name || !email || !password || password.length < 6) {
     fail("Name, email and a password of at least 6 characters are required");
   }
@@ -26,7 +27,8 @@ async function register(req, res) {
 }
 
 async function login(req, res) {
-  const { email, password } = req.body;
+  const { password } = req.body;
+  const email = req.body.email?.trim().toLowerCase();
   const admin = email && await prisma.admin.findUnique({ where: { email } });
   if (!admin || !password || !await bcrypt.compare(password, admin.password)) {
     fail("Invalid email or password", 401);

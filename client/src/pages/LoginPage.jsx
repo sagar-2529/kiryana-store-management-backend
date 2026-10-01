@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { api, session } from "../api/client";
 
@@ -13,7 +13,7 @@ export default function LoginPage() {
     event.preventDefault();
     setLoading(true); setError("");
     try {
-      const result = await api("/auth/login", { method: "POST", body: JSON.stringify({ email, password }) });
+      const result = await api("/auth/login", { method: "POST", body: JSON.stringify({ email: email.trim().toLowerCase(), password }) });
       session.set(result.data);
       navigate("/");
     } catch (err) { setError(err.message); }
