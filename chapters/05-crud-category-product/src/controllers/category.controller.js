@@ -12,7 +12,8 @@ const create = async (req, res) => {
     const { name, description, adminId } = req.body;
     if (!name) return sendError(res, 400, "Field 'name' is required");
 
-    let resolvedAdminId = adminId;
+    // In the unified API, the authenticated owner always owns the category.
+    let resolvedAdminId = req.admin?.id || adminId;
     if (!resolvedAdminId) {
       const admin = await prisma.admin.findFirst();
       if (!admin) return sendError(res, 400, "No admin exists. Seed first.");

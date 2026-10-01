@@ -8,8 +8,12 @@ const prisma = require("../lib/prisma");
 const asyncHandler = require("../middleware/asyncHandler");
 const { ValidationError, UnauthorizedError } = require("../utils/errors");
 
-const JWT_SECRET = process.env.JWT_SECRET || "kiryana-super-secret-key-change-in-production";
+const JWT_SECRET = process.env.JWT_SECRET;
 const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || "7d";
+
+if (!JWT_SECRET) {
+  throw new Error("JWT_SECRET must be configured before starting the API");
+}
 
 /**
  * Generate JWT for an admin
@@ -32,6 +36,13 @@ const register = asyncHandler(async (req, res) => {
 
   if (password.length < 6) {
     throw new ValidationError("Password must be at least 6 characters");
+  }
+
+  // This public route is bootstrap-only. Additional staff accounts should be
+  // created by a future owner-only administration workflow.
+  const adminCount = await prisma.admin.count();
+  if (adminCount > 0) {
+    throw new UnauthorizedError("An owner account already exists. Please login.");
   }
 
   // Check if email already registered
