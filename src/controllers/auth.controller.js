@@ -33,7 +33,15 @@ async function login(req, res) {
   if (!admin || !password || !await bcrypt.compare(password, admin.password)) {
     fail("Invalid email or password", 401);
   }
-  res.json({ success: true, data: { admin: { id: admin.id, name: admin.name, email: admin.email }, token: tokenFor(admin) } });
+  res.json({ success: 
+    true, data: 
+    { admin: 
+      { id: admin.id, 
+        name: admin.name, 
+        email: admin.email 
+      }, 
+      token: tokenFor(admin) 
+    } });
 }
 
 function getMe(req, res) {

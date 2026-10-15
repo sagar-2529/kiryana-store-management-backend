@@ -36,6 +36,24 @@ async function update(req, res) {
   res.json({ success: true, data });
 }
 
+// Stock is incremented in the database instead of being read and rewritten in
+// the browser. This prevents two simultaneous restocks from overwriting each
+// other and is available only after the owner authentication middleware.
+async function increaseStock(req, res) {
+  const quantity = Number(req.body.quantity);
+  if (!Number.isFinite(quantity) || quantity <= 0) fail("Restock quantity must be greater than zero");
+
+  const item = await prisma.item.findFirst({ where: { id: req.params.id, product: { category: { adminId: req.admin.id } } } });
+  if (!item) fail("Item not found", 404);
+
+  const data = await prisma.item.update({
+    where: { id: item.id },
+    data: { stock: { increment: quantity } },
+    include: { product: true, category: true },
+  });
+  res.json({ success: true, data, message: "Stock increased" });
+}
+
 async function remove(req, res) {
   const item = await prisma.item.findFirst({ where: { id: req.params.id, product: { category: { adminId: req.admin.id } } }, include: { _count: { select: { purchases: true } } } });
   if (!item) fail("Item not found", 404);
@@ -44,4 +62,4 @@ async function remove(req, res) {
   res.json({ success: true, message: "Item deleted" });
 }
 
-module.exports = { getAll, create, getById, update, remove };
+module.exports = { getAll, create, getById, update, increaseStock, remove };

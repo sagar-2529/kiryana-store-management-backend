@@ -8,6 +8,7 @@
     "start": "node src/server.js",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate deploy",
+    "seed:catalog": "node prisma/seed-demo-catalog.js",
     "check": "node --check src/server.js && node --check src/app.js"
   },
   "keywords": [],
