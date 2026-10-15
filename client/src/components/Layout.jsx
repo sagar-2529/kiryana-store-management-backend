@@ -7,6 +7,7 @@ const links = [
   ["/inventory", "Inventory", "▦"],
   ["/customers", "Customers", "♙"],
   ["/billing", "New bill", "⊕"],
+  ["/account", "Account", "⚙"],
 ];
 
 export default function Layout({ children }) {

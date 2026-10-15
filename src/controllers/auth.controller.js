@@ -57,4 +57,20 @@ async function changePassword(req, res) {
   res.json({ success: true, message: "Password changed" });
 }
 
-module.exports = { register, login, getMe, changePassword };
+// This is intentionally protected by the JWT middleware. It is for an owner
+// who is already signed in but no longer knows their previous password.
+async function resetPassword(req, res) {
+  const { newPassword } = req.body;
+  if (!newPassword || newPassword.length < 8) {
+    fail("A new password of at least 8 characters is required");
+  }
+
+  const admin = await prisma.admin.update({
+    where: { id: req.admin.id },
+    data: { password: await bcrypt.hash(newPassword, 12) },
+    select: { id: true, name: true, email: true },
+  });
+  res.json({ success: true, message: "Password reset successfully", data: { admin, token: tokenFor(admin) } });
+}
+
+module.exports = { register, login, getMe, changePassword, resetPassword };
