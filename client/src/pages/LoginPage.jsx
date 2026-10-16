@@ -15,7 +15,7 @@ export default function LoginPage() {
     try {
       const result = await api("/auth/login", { method: "POST", body: JSON.stringify({ email: email.trim().toLowerCase(), password }) });
       session.set(result.data);
-      navigate("/");
+      navigate("/dashboard");
     } catch (err) { setError(err.message); }
     finally { setLoading(false); }
   };
