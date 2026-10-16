@@ -10,6 +10,9 @@ export default defineConfig({
     seed: "node ./prisma/seed.js",
   },
   datasource: {
-    url: process.env.DATABASE_URL,
+    // Prisma migrations need a direct database connection because they use
+    // session-level advisory locks. The running API continues to use the
+    // pooled DATABASE_URL through its Prisma driver adapter.
+    url: process.env.DIRECT_URL || process.env.DATABASE_URL,
   },
 });
