@@ -19,7 +19,7 @@ export default function InventoryPage() {
   const selectedCategory = categories.find((category) => category.id === selectedCategoryId);
 
   const loadCategories = async () => {
-    const response = await api("/categories");
+    const response = await api("/categories?limit=100");
     setCategories(response.data);
   };
 
@@ -28,8 +28,8 @@ export default function InventoryPage() {
     setError("");
     try {
       const [productResponse, itemResponse] = await Promise.all([
-        api(`/products?categoryId=${categoryId}`),
-        api(`/items?categoryId=${categoryId}`),
+        api(`/products?categoryId=${categoryId}&limit=100`),
+        api(`/items?categoryId=${categoryId}&limit=100`),
       ]);
       setProducts(productResponse.data);
       setItems(itemResponse.data);

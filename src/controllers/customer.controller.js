@@ -1,10 +1,15 @@
 const prisma = require("../lib/prisma");
 const { fail } = require("../services/store.service");
+const { getPagination, paginationMeta } = require("../utils/pagination");
 
 async function getAll(req, res) {
-  const where = { ...(req.query.name && { name: { contains: req.query.name, mode: "insensitive" } }), ...(req.query.hasCredit === "true" && { balance: { gt: 0 } }) };
-  const data = await prisma.customer.findMany({ where, include: { _count: { select: { purchases: true } } }, orderBy: { name: "asc" } });
-  res.json({ success: true, data });
+  const { page, limit, skip } = getPagination(req.query);
+  const where = { ...(req.query.name && { name: { contains: req.query.name, mode: "insensitive" } }), ...(req.query.hasCredit === "true" && { balance: { gt: 0 } }), ...(req.query.hasCredit === "false" && { balance: { equals: 0 } }) };
+  const [data, total] = await prisma.$transaction([
+    prisma.customer.findMany({ where, include: { _count: { select: { purchases: true } } }, orderBy: { name: req.query.sortOrder }, skip, take: limit }),
+    prisma.customer.count({ where }),
+  ]);
+  res.json({ success: true, data, pagination: paginationMeta(total, page, limit) });
 }
 
 async function create(req, res) {

@@ -10,6 +10,10 @@ const unitType = z.enum(["KG", "GRAM", "LITRE", "ML", "PIECE", "DOZEN", "PACKET"
 const named = z.string().trim().min(1, "Name is required").max(120);
 const idParams = z.object({ id });
 const customerIdParams = z.object({ customerId: id });
+const pagination = z.object({
+  page: z.coerce.number().int().min(1).max(100000).default(1),
+  limit: z.coerce.number().int().min(1).max(500).default(25),
+});
 
 const auth = {
   register: z.object({ name: named, email: z.string().trim().email(), password: z.string().min(6).max(128) }),
@@ -54,4 +58,18 @@ const credit = {
   repay: z.object({ customerId: id, amount: positiveNumber, note: optionalText(500) }),
 };
 
-module.exports = { auth, category, product, item, customer, purchase, credit, idParams, customerIdParams };
+const query = {
+  categories: pagination.extend({ name: optionalText(120), sortOrder: z.enum(["asc", "desc"]).default("asc") }),
+  products: pagination.extend({ categoryId: id.optional(), name: optionalText(120), sortOrder: z.enum(["asc", "desc"]).default("asc") }),
+  items: pagination.extend({
+    categoryId: id.optional(), productId: id.optional(), unitType: unitType.optional(), name: optionalText(120),
+    stockStatus: z.enum(["IN_STOCK", "LOW_STOCK", "OUT_OF_STOCK"]).optional(), sortOrder: z.enum(["asc", "desc"]).default("asc"),
+  }),
+  customers: pagination.extend({ name: optionalText(120), hasCredit: z.enum(["true", "false"]).optional(), sortOrder: z.enum(["asc", "desc"]).default("asc") }),
+  purchases: pagination.extend({
+    customerId: id.optional(), paymentType: z.enum(["CASH", "CREDIT", "MIXED"]).optional(), status: z.enum(["ACTIVE", "CANCELLED"]).optional(),
+    startDate: z.string().date().optional(), endDate: z.string().date().optional(),
+  }),
+};
+
+module.exports = { auth, category, product, item, customer, purchase, credit, query, idParams, customerIdParams };

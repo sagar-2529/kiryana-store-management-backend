@@ -11,7 +11,7 @@ export default function CustomersPage() {
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
 
-  const load = (name = "") => api(`/customers${name ? `?name=${encodeURIComponent(name)}` : ""}`)
+  const load = (name = "") => api(`/customers?limit=100${name ? `&name=${encodeURIComponent(name)}` : ""}`)
     .then((response) => setCustomers(response.data))
     .catch((requestError) => setError(requestError.message));
 

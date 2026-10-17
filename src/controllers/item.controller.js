@@ -1,11 +1,19 @@
 const prisma = require("../lib/prisma");
 const { fail } = require("../services/store.service");
 const UNIT_TYPES = ["KG", "GRAM", "LITRE", "ML", "PIECE", "DOZEN", "PACKET", "BOX", "BOTTLE", "OTHER"];
+const { getPagination, paginationMeta } = require("../utils/pagination");
 
 async function getAll(req, res) {
+  const { page, limit, skip } = getPagination(req.query);
   const where = { product: { category: { adminId: req.admin.id } }, ...(req.query.categoryId && { categoryId: req.query.categoryId }), ...(req.query.productId && { productId: req.query.productId }), ...(req.query.unitType && { unitType: req.query.unitType }), ...(req.query.name && { name: { contains: req.query.name, mode: "insensitive" } }) };
-  const data = await prisma.item.findMany({ where, include: { product: true, category: true }, orderBy: { name: "asc" } });
-  res.json({ success: true, data });
+  if (req.query.stockStatus === "OUT_OF_STOCK") where.stock = { equals: 0 };
+  if (req.query.stockStatus === "LOW_STOCK") where.stock = { gt: 0, lte: 5 };
+  if (req.query.stockStatus === "IN_STOCK") where.stock = { gt: 0 };
+  const [data, total] = await prisma.$transaction([
+    prisma.item.findMany({ where, include: { product: true, category: true }, orderBy: { name: req.query.sortOrder }, skip, take: limit }),
+    prisma.item.count({ where }),
+  ]);
+  res.json({ success: true, data, pagination: paginationMeta(total, page, limit) });
 }
 
 async function create(req, res) {

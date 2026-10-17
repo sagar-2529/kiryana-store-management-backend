@@ -18,7 +18,7 @@ export default function BillingPage() {
   const loadData = async () => {
     try {
       const [itemResponse, customerResponse, categoryResponse] = await Promise.all([
-        api("/items"), api("/customers"), api("/categories"),
+        api("/items?limit=500&stockStatus=IN_STOCK"), api("/customers?limit=500"), api("/categories?limit=100"),
       ]);
       setItems(itemResponse.data.filter((item) => Number(item.stock) > 0));
       setCustomers(customerResponse.data);

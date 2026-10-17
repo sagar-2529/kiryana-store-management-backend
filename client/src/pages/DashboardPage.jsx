@@ -9,7 +9,7 @@ const money = (value) => new Intl.NumberFormat("en-IN", { style: "currency", cur
 export default function DashboardPage() {
   const [data, setData] = useState({ items: [], customers: [], purchases: [] });
   const [error, setError] = useState("");
-  useEffect(() => { Promise.all([api("/items"), api("/customers?hasCredit=true"), api("/purchases")]).then(([items, customers, purchases]) => setData({ items: items.data, customers: customers.data, purchases: purchases.data })).catch((err) => setError(err.message)); }, []);
+  useEffect(() => { Promise.all([api("/items?limit=500"), api("/customers?hasCredit=true&limit=500"), api("/purchases?limit=100")]).then(([items, customers, purchases]) => setData({ items: items.data, customers: customers.data, purchases: purchases.data })).catch((err) => setError(err.message)); }, []);
   const today = new Date().toDateString();
   const todaySales = data.purchases.filter((sale) => new Date(sale.createdAt).toDateString() === today && sale.status === "ACTIVE").reduce((sum, sale) => sum + Number(sale.totalAmount), 0);
   const totalCredit = data.customers.reduce((sum, customer) => sum + Number(customer.balance), 0);
