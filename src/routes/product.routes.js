@@ -1,6 +1,8 @@
 const router = require("express").Router();
 const wrap = require("../utils/async-response");
 const controller = require("../controllers/product.controller");
-router.route("/").get(wrap(controller.getAll)).post(wrap(controller.create));
-router.route("/:id").get(wrap(controller.getById)).put(wrap(controller.update)).delete(wrap(controller.remove));
+const { validate } = require("../middleware/validate");
+const { product, idParams } = require("../validation/schemas");
+router.route("/").get(wrap(controller.getAll)).post(validate({ body: product.create }), wrap(controller.create));
+router.route("/:id").get(validate({ params: idParams }), wrap(controller.getById)).put(validate({ params: idParams, body: product.update }), wrap(controller.update)).delete(validate({ params: idParams }), wrap(controller.remove));
 module.exports = router;
