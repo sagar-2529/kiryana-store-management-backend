@@ -48,6 +48,21 @@ export default function CustomersPage() {
     }
   };
 
+  const deleteCustomer = async (customer) => {
+    const confirmed = window.confirm(`Delete ${customer.name}? This cannot be undone.`);
+    if (!confirmed) return;
+
+    setError("");
+    setMessage("");
+    try {
+      await api(`/customers/${customer.id}`, { method: "DELETE" });
+      setMessage(`${customer.name} was deleted.`);
+      load(search);
+    } catch (requestError) {
+      setError(requestError.message);
+    }
+  };
+
   const closeModal = () => {
     setShowForm(false);
     setRepaymentCustomer(null);
@@ -73,9 +88,9 @@ export default function CustomersPage() {
       </form></>}
     </div></div>}
 
-    <section className="panel table-panel"><div className="table-toolbar"><div><h3>Customer directory</h3><p>{customers.length} customers</p></div><input value={search} onChange={(event) => { setSearch(event.target.value); load(event.target.value); }} placeholder="Search customer…" /></div><div className="responsive-table"><table><thead><tr><th>Customer</th><th>Phone</th><th>Purchase history</th><th>Outstanding udhaar</th><th></th></tr></thead><tbody>{customers.map((customer) => {
+    <section className="panel table-panel"><div className="table-toolbar"><div><h3>Customer directory</h3><p>{customers.length} customers</p></div><input value={search} onChange={(event) => { setSearch(event.target.value); load(event.target.value); }} placeholder="Search customer…" /></div><div className="responsive-table"><table><thead><tr><th>Customer</th><th>Phone</th><th>Purchase history</th><th>Outstanding udhaar</th><th>Actions</th></tr></thead><tbody>{customers.map((customer) => {
       const balance = Number(customer.balance);
-      return <tr key={customer.id}><td><strong>{customer.name}</strong><small>{customer.address || "No address saved"}</small></td><td>{customer.phone || "—"}</td><td>{customer._count?.purchases || 0} bills</td><td><b className={balance > 0 ? "credit" : ""}>₹{balance.toFixed(2)}</b></td><td>{balance > 0 ? <button className="repay-button" onClick={() => { setError(""); setMessage(""); setRepaymentCustomer(customer); }}>Receive payment</button> : <span className="paid-label">Paid</span>}</td></tr>;
+      return <tr key={customer.id}><td><strong>{customer.name}</strong><small>{customer.address || "No address saved"}</small></td><td>{customer.phone || "—"}</td><td>{customer._count?.purchases || 0} bills</td><td><b className={balance > 0 ? "credit" : ""}>₹{balance.toFixed(2)}</b></td><td><div className="customer-actions">{balance > 0 ? <button className="repay-button" onClick={() => { setError(""); setMessage(""); setRepaymentCustomer(customer); }}>Receive payment</button> : <span className="paid-label">Paid</span>}<button className="delete-button" onClick={() => deleteCustomer(customer)}>Delete</button></div></td></tr>;
     })}{!customers.length && <tr><td colSpan="5" className="empty">No customers found.</td></tr>}</tbody></table></div></section>
   </Layout>;
 }
